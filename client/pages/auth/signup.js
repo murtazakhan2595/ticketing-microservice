@@ -1,24 +1,21 @@
 import { useState } from 'react';
-import axios from 'axios';
+import Router from 'next/router';
+import useRequest from '../../hooks/use-request';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState([]);
+
+  const { doRequest, errors } = useRequest({
+    url: '/api/users/signup',
+    method: 'post',
+    body: { email, password },
+    onSuccess: () => Router.push('/'),
+  });
 
   const onSubmit = async (event) => {
     event.preventDefault();
-
-    try {
-      const response = await axios.post('/api/users/signup', {
-        email,
-        password,
-      });
-      console.log(response.data);
-      setErrors([]);
-    } catch (err) {
-      setErrors(err.response?.data?.errors || [{ message: 'Something went wrong' }]);
-    }
+    await doRequest();
   };
 
   return (
@@ -44,18 +41,7 @@ export default function Signup() {
         />
       </div>
 
-      {errors.length > 0 && (
-        <div className="mb-4 p-4 border border-red-400 bg-red-50 rounded">
-          <h4 className="font-semibold text-red-700 mb-2">
-            Ooops....
-          </h4>
-          <ul className="list-disc list-inside text-red-600 text-sm">
-            {errors.map((err) => (
-              <li key={err.message}>{err.message}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {errors}
 
       <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
         Sign Up
